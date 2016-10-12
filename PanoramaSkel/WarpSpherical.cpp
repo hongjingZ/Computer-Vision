@@ -43,7 +43,6 @@ CFloatImage WarpSphericalField(CShape srcSh, CShape dstSh, float f,
     // Set up the pixel coordinate image
     dstSh.nBands = 2;
     CFloatImage uvImg(dstSh);   // (u,v) coordinates
-
     // Fill in the values
     for (int y = 0; y < dstSh.height; y++)
     {
@@ -72,7 +71,9 @@ CFloatImage WarpSphericalField(CShape srcSh, CShape dstSh, float f,
                 continue;
             xt = p[0] / p[2];
             yt = p[1] / p[2];
- 
+            float radius = (xt*xt+yt*yt);
+            xt = xt*(1+k1*radius+k2*radius*radius);
+            yt = yt*(1+k1*radius+k2*radius*radius);
 			// *** BEGIN TODO ***
 			// add code to apply the spherical correction, i.e.,
 			// compute the Euclidean coordinates, rotate according to

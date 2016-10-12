@@ -199,19 +199,14 @@ static void AccumulateBlend(CByteImage& img, CFloatImage& acc, CTransform3x3 M, 
             //horizontal hat function
             //from 0 to (blendWidth/2-1)
             
-            float slope = 1/(blendWidth/2 - 1);
-            if (x > 0 and x < blendWidth/2)
-            {
-                weight = x*slope;
+            /*Pyramid blending
+            // acc as A
+            // img as B
+             for(int i=0;i<5;i++){
+             
+            
             }
-            else if (x >= blendWidth/2 and x<bb_max_x - blendWidth/2)
-            {
-                weight = 1.0;
-            }
-            else
-            {
-                weight = (bb_max_x - x - 1) * slope;
-            }
+             */
 			// *** END TODO ***	
             
 			acc.Pixel(x, y, 0) += (float) (weight * img.PixelLerp(x_src, y_src, 0));
@@ -223,13 +218,70 @@ static void AccumulateBlend(CByteImage& img, CFloatImage& acc, CTransform3x3 M, 
         }
     }
 }
+/*
+static void PyramidBlend(CByteImage& img, CFloatImage& acc, CTransform3x3 M, float blendWidth)
+{
+int bb_min_x, bb_min_y, bb_max_x, bb_max_y;
+ImageBoundingBox(img, M, bb_min_x, bb_min_y, bb_max_x, bb_max_y);
+
+CTransform3x3 Minv = M.Inverse();
+
+for (int y = bb_min_y; y <= bb_max_y; y++) {
+    for (int x = bb_min_x; x < bb_max_x; x++) {
+        if (x < 0 || x >= acc.Shape().width ||
+            y < 0 || y >= acc.Shape().height)
+            continue;
+
+        CVector3 p_dest, p_src;
+        p_dest[0] = x;
+        p_dest[1] = y;
+        p_dest[2] = 1.0;
+        
+        p_src = Minv * p_dest;
+        
+        float x_src = (float) (p_src[0] / p_src[2]);
+        float y_src = (float) (p_src[1] / p_src[2]);
+        
+        if (x_src < 0.0 || x_src >= img.Shape().width - 1 ||
+            y_src < 0.0 || y_src >= img.Shape().height - 1)
+            continue;
+        
+        int xf = (int) floor(x_src);
+        int yf = (int) floor(y_src);
+        int xc = xf + 1;
+        int yc = yf + 1;
+
+        if (img.Pixel(xf, yf, 0) == 0x0 &&
+            img.Pixel(xf, yf, 1) == 0x0 &&
+            img.Pixel(xf, yf, 2) == 0x0)
+            continue;
+        
+        if (img.Pixel(xc, yf, 0) == 0x0 &&
+            img.Pixel(xc, yf, 1) == 0x0 &&
+            img.Pixel(xc, yf, 2) == 0x0)
+            continue;
+        
+        if (img.Pixel(xf, yc, 0) == 0x0 &&
+            img.Pixel(xf, yc, 1) == 0x0 &&
+            img.Pixel(xf, yc, 2) == 0x0)
+            continue;
+        
+        if (img.Pixel(xc, yc, 0) == 0x0 &&
+            img.Pixel(xc, yc, 1) == 0x0 &&
+            img.Pixel(xc, yc, 2) == 0x0)
+            continue;
+    }
+}
+    //generate Gaussian pyramid for ACC
+    //generate Gaussian pyramid for IMG
+    //generate Laplacian pyramid for ACC
+    //generate Laplacian pyramid for IMG
+    //add left and right part of images in belending region
+    //reconstruct
+}
 
 
-
-
-
-
-
+*/
 /******************* TO DO 5 *********************
  * NormalizeBlend:
  *	INPUT:
@@ -413,7 +465,8 @@ CByteImage BlendImages(CImagePositionV& ipv, float blendWidth)
     // Allocate the final image shape
     CShape cShape(mShape.width - width, height, nBands);
     CByteImage croppedImage(cShape);
-
+    // compute affine ]j'
+    
     // Compute the affine deformation
     CTransform3x3 A;
     A[0][0] = 1;
